@@ -4,6 +4,7 @@ Reconnaissance data model.
 Stores all entities discovered during passive reconnaissance.
 """
 
+
 from dataclasses import dataclass, field
 
 from models.historical_url import HistoricalURL

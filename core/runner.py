@@ -2,22 +2,35 @@
 Praevia execution runner.
 """
 
+from collectors.base_collector import BaseCollector
+from models.reconnaissance_data import ReconnaissanceData
 from models.target import Target
 
 
 class Runner:
     """
-    Coordinates the execution of Praevia.
+    Coordinates the execution of the passive reconnaissance workflow.
     """
 
-    def __init__(self, target: Target) -> None:
-        self.target = target
-
-    def run(self) -> None:
+    def __init__(
+        self,
+        collectors: list[BaseCollector],
+    ) -> None:
         """
-        Execute the Praevia workflow.
+        Initialises the runner with the configured collectors.
         """
+        self._collectors = collectors # Internal attribute.
 
-        # Temporary output.
-        print("Starting Praevia...")
-        print(f"Target: {self.target.host}")
+    def run(
+        self,
+        target: Target,
+    ) -> ReconnaissanceData:
+        """
+        Executes the passive reconnaissance workflow.
+        """
+        data = ReconnaissanceData()
+
+        for collector in self._collectors:
+            collector.collect(target, data)
+
+        return data
