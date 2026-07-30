@@ -8,7 +8,7 @@ import sys
 
 from cli.parser import create_parser
 from core.runner import Runner
-from core.target import parse_target
+from models.target import parse_target
 
 
 def main() -> None:

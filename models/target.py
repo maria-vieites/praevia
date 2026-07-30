@@ -5,26 +5,28 @@ This module defines the Target class and provides helper functions
 to parse and normalize user input into a Target object.
 """
 
+from dataclasses import dataclass
+from enum import Enum
 from urllib.parse import urlparse
 
-# Target type constants
-DOMAIN = "DOMAIN"
+
+class TargetType(Enum):
+    """
+    Supported target types.
+    """
+
+    DOMAIN = "domain"
 
 
+@dataclass
 class Target:
     """
     Represents the target analysed by Praevia.
     """
 
-    def __init__(
-        self,
-        host: str,
-        url: str,
-        target_type: str,
-    ):
-        self.host = host
-        self.url = url
-        self.target_type = target_type
+    host: str
+    url: str
+    target_type: TargetType
 
 
 def parse_target(raw_target: str) -> Target:
@@ -44,5 +46,5 @@ def parse_target(raw_target: str) -> Target:
     return Target(
         host=host,
         url=url,
-        target_type=DOMAIN,
+        target_type=TargetType.DOMAIN,
     )

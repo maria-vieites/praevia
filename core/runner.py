@@ -2,7 +2,7 @@
 Praevia execution runner.
 """
 
-from core.target import Target
+from models.target import Target
 
 
 class Runner:
@@ -10,7 +10,7 @@ class Runner:
     Coordinates the execution of Praevia.
     """
 
-    def __init__(self, target: Target):
+    def __init__(self, target: Target) -> None:
         self.target = target
 
     def run(self) -> None:
@@ -18,6 +18,6 @@ class Runner:
         Execute the Praevia workflow.
         """
 
-        # Temporary output
+        # Temporary output.
         print("Starting Praevia...")
         print(f"Target: {self.target.host}")
