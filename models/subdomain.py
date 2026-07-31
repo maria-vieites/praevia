@@ -15,5 +15,5 @@ class Subdomain:
     Represents a subdomain identified during passive reconnaissance.
     """
 
-    name: str
+    hostname: str
     evidence: list[Evidence] = field(default_factory=list)

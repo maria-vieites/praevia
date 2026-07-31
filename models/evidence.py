@@ -7,15 +7,18 @@ passive reconnaissance.
 
 from dataclasses import dataclass
 
+from models.source_type import SourceType
+
 
 @dataclass(slots=True)
 class Evidence:
     """
     Represents supporting information for a discovered entity.
 
-    An evidence records how a collector identified a specific finding,
-    providing traceability throughout the reconnaissance workflow.
+    An evidence records how a passive intelligence source identified a
+    specific finding, providing traceability throughout the
+    reconnaissance workflow.
     """
 
-    collector: str
+    source: SourceType
     details: str

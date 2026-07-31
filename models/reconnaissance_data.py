@@ -4,7 +4,6 @@ Reconnaissance data model.
 Stores all entities discovered during passive reconnaissance.
 """
 
-
 from dataclasses import dataclass, field
 
 from models.historical_url import HistoricalURL
@@ -25,3 +24,18 @@ class ReconnaissanceData:
     repositories: list[Repository] = field(default_factory=list)
     historical_urls: list[HistoricalURL] = field(default_factory=list)
     web_resources: list[WebResource] = field(default_factory=list)
+
+    def add_subdomain(
+        self,
+        subdomain: Subdomain,
+    ) -> None:
+        """
+        Adds a discovered subdomain or merges it with an existing one.
+        """
+
+        for existing in self.subdomains:
+            if existing.hostname == subdomain.hostname:
+                existing.evidence.extend(subdomain.evidence)
+                return
+
+        self.subdomains.append(subdomain)

@@ -19,7 +19,7 @@ class Runner:
         """
         Initialises the runner with the configured collectors.
         """
-        self._collectors = collectors # Internal attribute.
+        self._collectors = collectors  # Internal attribute.
 
     def run(
         self,
@@ -32,5 +32,9 @@ class Runner:
 
         for collector in self._collectors:
             collector.collect(target, data)
+
+        # Temporary output for development.
+        for subdomain in data.subdomains:
+            print(subdomain)
 
         return data
