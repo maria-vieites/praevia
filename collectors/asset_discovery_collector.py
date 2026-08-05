@@ -3,6 +3,7 @@ Asset discovery collector.
 """
 
 from collectors.base_collector import BaseCollector
+from collectors.sources.certspotter import CertSpotterSource
 from collectors.sources.crtsh import CrtShSource
 from models.evidence import Evidence
 from models.reconnaissance_data import ReconnaissanceData
@@ -33,19 +34,31 @@ class AssetDiscoveryCollector(BaseCollector):
         reconnaissance data model.
         """
 
-        source = CrtShSource()
+        sources = [
+            (
+                CrtShSource(),
+                SourceType.CRT_SH,
+                "Certificate Transparency log",
+            ),
+            (
+                CertSpotterSource(),
+                SourceType.CERTSPOTTER,
+                "Certificate Transparency log",
+            ),
+        ]
 
-        hostnames = source.search(target)
+        for source, source_type, details in sources:
+            hostnames = source.search(target)
 
-        for hostname in hostnames:
-            subdomain = Subdomain(
-                hostname=hostname,
-                evidence=[
-                    Evidence(
-                        source=SourceType.CRT_SH,
-                        details="Certificate Transparency log",
-                    )
-                ],
-            )
+            for hostname in hostnames:
+                subdomain = Subdomain(
+                    hostname=hostname,
+                    evidence=[
+                        Evidence(
+                            source=source_type,
+                            details=details,
+                        )
+                    ],
+                )
 
-            data.add_subdomain(subdomain)
+                data.add_subdomain(subdomain)

@@ -20,3 +20,6 @@ HTTP_TIMEOUT = 20
 DEFAULT_TIMEOUT = 30
 
 DEBUG = True
+
+# Optional API keys.
+CERTSPOTTER_API_KEY = None
