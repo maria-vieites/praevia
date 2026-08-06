@@ -11,8 +11,9 @@ from config.settings import HTTP_TIMEOUT
 
 def get_json(
     url: str,
-    params: dict[str, str] | None = None,
+    params: dict[str, str | list[str]] | None = None,
     headers: dict[str, str] | None = None,
+    timeout: int = HTTP_TIMEOUT,
 ) -> list | dict:
     """
     Performs an HTTP GET request and returns the JSON response.
@@ -21,6 +22,7 @@ def get_json(
         url: URL to request.
         params: Optional query string parameters.
         headers: Optional HTTP headers.
+        timeout: Request timeout in seconds.
 
     Returns:
         The decoded JSON response.
@@ -33,7 +35,7 @@ def get_json(
         url,
         params=params,
         headers=headers,
-        timeout=HTTP_TIMEOUT,
+        timeout=timeout,
     )
 
     response.raise_for_status()

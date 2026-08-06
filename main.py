@@ -29,8 +29,8 @@ def main() -> None:
         sys.exit(1)
 
     collectors = [
-        TechnologyCollector(),
         AssetDiscoveryCollector(),
+        TechnologyCollector(),
         WaybackCollector(),
         GitHubCollector(),
     ]

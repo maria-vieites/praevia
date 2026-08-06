@@ -3,7 +3,11 @@ Wayback Machine collector.
 """
 
 from collectors.base_collector import BaseCollector
+from collectors.sources.wayback import WaybackSource
+from models.evidence import Evidence
+from models.historical_url import HistoricalURL
 from models.reconnaissance_data import ReconnaissanceData
+from models.source_type import SourceType
 from models.target import Target
 
 
@@ -17,7 +21,6 @@ class WaybackCollector(BaseCollector):
         """
         Returns the collector name.
         """
-
         return "Wayback Machine"
 
     def collect(
@@ -30,4 +33,19 @@ class WaybackCollector(BaseCollector):
         reconnaissance data model.
         """
 
-        pass
+        source = WaybackSource()
+
+        urls = source.search(target)
+
+        for url in urls:
+            historical_url = HistoricalURL(
+                url=url,
+                evidence=[
+                    Evidence(
+                        source=SourceType.WAYBACK,
+                        details="Internet Archive Wayback Machine",
+                    )
+                ],
+            )
+
+            data.add_historical_url(historical_url)

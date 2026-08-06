@@ -39,3 +39,18 @@ class ReconnaissanceData:
                 return
 
         self.subdomains.append(subdomain)
+
+    def add_historical_url(
+        self,
+        historical_url: HistoricalURL,
+    ) -> None:
+        """
+        Adds a discovered historical URL or merges it with an existing one.
+        """
+
+        for existing in self.historical_urls:
+            if existing.url == historical_url.url:
+                existing.evidence.extend(historical_url.evidence)
+                return
+
+        self.historical_urls.append(historical_url)

@@ -9,7 +9,6 @@ import argparse
 from config.settings import (
     DEFAULT_OUTPUT,
     DEFAULT_OUTPUT_DIRECTORY,
-    DEFAULT_TIMEOUT,
     SUPPORTED_OUTPUTS,
     VERSION,
 )
@@ -62,14 +61,6 @@ def create_parser() -> argparse.ArgumentParser:
         "--output-dir",
         default=DEFAULT_OUTPUT_DIRECTORY,
         help="Directory where generated reports will be saved.",
-    )
-
-    # Network options
-    parser.add_argument(
-        "--timeout",
-        type=int,
-        default=DEFAULT_TIMEOUT,
-        help="Timeout for external requests in seconds.",
     )
 
     # General options

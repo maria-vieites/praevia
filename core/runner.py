@@ -19,7 +19,7 @@ class Runner:
         """
         Initialises the runner with the configured collectors.
         """
-        self._collectors = collectors  # Internal attribute.
+        self._collectors = collectors
 
     def run(
         self,
@@ -28,13 +28,19 @@ class Runner:
         """
         Executes the passive reconnaissance workflow.
         """
+
         data = ReconnaissanceData()
 
         for collector in self._collectors:
             collector.collect(target, data)
 
         # Temporary output for development.
+        print("\n=== Subdomains ===")
         for subdomain in data.subdomains:
-            print(subdomain)
+            print(subdomain.hostname)
+
+        print("\n=== Historical Endpoints (Wayback Machine) ===")
+        for endpoint in data.historical_urls:
+            print(endpoint.url)
 
         return data
