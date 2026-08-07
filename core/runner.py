@@ -32,12 +32,26 @@ class Runner:
         data = ReconnaissanceData()
 
         for collector in self._collectors:
-            collector.collect(target, data)
+            collector.collect(
+                target,
+                data,
+            )
 
         # Temporary output for development.
         print("\n=== Subdomains ===")
         for subdomain in data.subdomains:
             print(subdomain.hostname)
+
+        print("\n=== Technologies ===")
+        for technology in data.technologies:
+            version = (
+                f" {technology.version}"
+                if technology.version
+                else ""
+            )
+            print(
+                f"- {technology.name}{version}"
+            )
 
         print("\n=== Historical Endpoints (Wayback Machine) ===")
         for endpoint in data.historical_urls:

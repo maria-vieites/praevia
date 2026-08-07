@@ -15,4 +15,5 @@ class SourceType(StrEnum):
     CRT_SH = "crt.sh"
     CERTSPOTTER = "CertSpotter"
     WAYBACK = "Wayback Machine"
+    WAPPALYZER = "Wappalyzer"
     GITHUB = "GitHub"

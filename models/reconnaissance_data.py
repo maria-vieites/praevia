@@ -19,11 +19,25 @@ class ReconnaissanceData:
     Stores all entities discovered during passive reconnaissance.
     """
 
-    technologies: list[Technology] = field(default_factory=list)
-    subdomains: list[Subdomain] = field(default_factory=list)
-    repositories: list[Repository] = field(default_factory=list)
-    historical_urls: list[HistoricalURL] = field(default_factory=list)
-    web_resources: list[WebResource] = field(default_factory=list)
+    subdomains: list[Subdomain] = field(
+        default_factory=list,
+    )
+
+    technologies: list[Technology] = field(
+        default_factory=list,
+    )
+
+    repositories: list[Repository] = field(
+        default_factory=list,
+    )
+
+    historical_urls: list[HistoricalURL] = field(
+        default_factory=list,
+    )
+
+    web_resources: list[WebResource] = field(
+        default_factory=list,
+    )
 
     def add_subdomain(
         self,
@@ -34,11 +48,16 @@ class ReconnaissanceData:
         """
 
         for existing in self.subdomains:
+
             if existing.hostname == subdomain.hostname:
-                existing.evidence.extend(subdomain.evidence)
+                existing.evidence.extend(
+                    subdomain.evidence,
+                )
                 return
 
-        self.subdomains.append(subdomain)
+        self.subdomains.append(
+            subdomain,
+        )
 
     def add_historical_url(
         self,
@@ -49,8 +68,13 @@ class ReconnaissanceData:
         """
 
         for existing in self.historical_urls:
+
             if existing.url == historical_url.url:
-                existing.evidence.extend(historical_url.evidence)
+                existing.evidence.extend(
+                    historical_url.evidence,
+                )
                 return
 
-        self.historical_urls.append(historical_url)
+        self.historical_urls.append(
+            historical_url,
+        )
