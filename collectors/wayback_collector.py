@@ -8,7 +8,7 @@ from models.evidence import Evidence
 from models.historical_url import HistoricalURL
 from models.reconnaissance_data import ReconnaissanceData
 from models.source_type import SourceType
-from models.target import Target
+from models.target import Target, TargetType
 
 
 class WaybackCollector(BaseCollector):
@@ -33,9 +33,14 @@ class WaybackCollector(BaseCollector):
         reconnaissance data model.
         """
 
+        if target.target_type == TargetType.LOCAL:
+            return
+
         source = WaybackSource()
 
-        urls = source.search(target)
+        urls = source.search(
+            target,
+        )
 
         for url in urls:
             historical_url = HistoricalURL(
@@ -48,4 +53,6 @@ class WaybackCollector(BaseCollector):
                 ],
             )
 
-            data.add_historical_url(historical_url)
+            data.add_historical_url(
+                historical_url,
+            )

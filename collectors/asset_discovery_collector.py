@@ -9,7 +9,7 @@ from models.evidence import Evidence
 from models.reconnaissance_data import ReconnaissanceData
 from models.source_type import SourceType
 from models.subdomain import Subdomain
-from models.target import Target
+from models.target import Target, TargetType
 
 
 class AssetDiscoveryCollector(BaseCollector):
@@ -30,9 +30,12 @@ class AssetDiscoveryCollector(BaseCollector):
         data: ReconnaissanceData,
     ) -> None:
         """
-        Discovers publicly available assets and stores them in the shared
-        reconnaissance data model.
+        Discovers publicly available assets and stores them in the
+        shared reconnaissance data model.
         """
+
+        if target.target_type == TargetType.LOCAL:
+            return
 
         sources = [
             (
@@ -48,7 +51,9 @@ class AssetDiscoveryCollector(BaseCollector):
         ]
 
         for source, source_type, details in sources:
-            hostnames = source.search(target)
+            hostnames = source.search(
+                target,
+            )
 
             for hostname in hostnames:
                 subdomain = Subdomain(
@@ -61,4 +66,6 @@ class AssetDiscoveryCollector(BaseCollector):
                     ],
                 )
 
-                data.add_subdomain(subdomain)
+                data.add_subdomain(
+                    subdomain,
+                )

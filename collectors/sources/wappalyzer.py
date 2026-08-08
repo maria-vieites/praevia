@@ -50,7 +50,7 @@ class WappalyzerSource:
         with Wappalyzer() as scanner:
 
             return scanner.analyze(
-                f"https://{target.host}",
+                target.url,
             )
 
     def _parse(

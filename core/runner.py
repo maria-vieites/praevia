@@ -43,17 +43,44 @@ class Runner:
             print(subdomain.hostname)
 
         print("\n=== Technologies ===")
+
         for technology in data.technologies:
             version = (
                 f" {technology.version}"
                 if technology.version
                 else ""
             )
+
             print(
                 f"- {technology.name}{version}"
             )
 
-        print("\n=== Historical Endpoints (Wayback Machine) ===")
+            if technology.cpe:
+                print(
+                    f"  CPE: {technology.cpe}"
+                )
+
+            if technology.vulnerabilities:
+                print(
+                    "  Vulnerabilities:"
+                )
+
+                for vulnerability in technology.vulnerabilities:
+                    cvss = (
+                        f"CVSS {vulnerability.cvss}"
+                        if vulnerability.cvss is not None
+                        else "CVSS N/A"
+                    )
+
+                    print(
+                        f"    - {vulnerability.cve} "
+                        f"({cvss})"
+                    )
+
+        print(
+            "\n=== Historical Endpoints (Wayback Machine) ==="
+        )
+
         for endpoint in data.historical_urls:
             print(endpoint.url)
 

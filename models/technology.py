@@ -17,9 +17,7 @@ class Technology:
     """
 
     name: str
-
     version: str | None = None
-
     confidence: int = 0
 
     categories: list[str] = field(
@@ -29,6 +27,8 @@ class Technology:
     groups: list[str] = field(
         default_factory=list,
     )
+
+    cpe: str | None = None
 
     vulnerabilities: list[Vulnerability] = field(
         default_factory=list,
