@@ -6,6 +6,7 @@ Collects technologies detected during passive reconnaissance.
 
 from collectors.base_collector import BaseCollector
 from collectors.sources.cpe import CPEResolver
+from collectors.sources.exploitdb import ExploitDBSource
 from collectors.sources.nvd import NVDSource
 from collectors.sources.wappalyzer import WappalyzerSource
 from models.reconnaissance_data import ReconnaissanceData
@@ -37,6 +38,7 @@ class TechnologyFingerprintCollector(BaseCollector):
         self._source = WappalyzerSource()
         self._cpe_resolver = CPEResolver()
         self._nvd_source = NVDSource()
+        self._exploitdb_source = ExploitDBSource()
 
     def collect(
         self,
@@ -66,10 +68,22 @@ class TechnologyFingerprintCollector(BaseCollector):
             if not technology.cpe:
                 continue
 
-            technology.vulnerabilities.extend(
+            vulnerabilities = (
                 self._nvd_source.search(
                     technology,
                 )
+            )
+
+            for vulnerability in vulnerabilities:
+
+                vulnerability.poc = (
+                    self._exploitdb_source.search(
+                        vulnerability.cve,
+                    )
+                )
+
+            technology.vulnerabilities.extend(
+                vulnerabilities,
             )
 
         data.technologies.extend(

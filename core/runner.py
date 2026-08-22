@@ -39,6 +39,7 @@ class Runner:
 
         # Temporary output for development.
         print("\n=== Subdomains ===")
+
         for subdomain in data.subdomains:
             print(subdomain.hostname)
 
@@ -76,6 +77,12 @@ class Runner:
                         f"    - {vulnerability.cve} "
                         f"({cvss})"
                     )
+
+                    if vulnerability.poc:
+                        print(
+                            f"      PoC: "
+                            f"{vulnerability.poc}"
+                        )
 
         print(
             "\n=== Historical Endpoints (Wayback Machine) ==="
