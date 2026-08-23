@@ -78,3 +78,26 @@ class ReconnaissanceData:
         self.historical_urls.append(
             historical_url,
         )
+
+    def add_repository(
+        self,
+        repository: Repository,
+    ) -> None:
+        """
+        Adds a discovered repository or merges it with an existing one.
+        """
+
+        for existing in self.repositories:
+
+            if (
+                existing.platform == repository.platform
+                and existing.url == repository.url
+            ):
+                existing.evidence.extend(
+                    repository.evidence,
+                )
+                return
+
+        self.repositories.append(
+            repository,
+        )

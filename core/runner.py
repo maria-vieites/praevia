@@ -84,6 +84,22 @@ class Runner:
                             f"{vulnerability.poc}"
                         )
 
+        print("\n=== GitHub Repositories ===")
+
+        for repository in data.repositories:
+            print(
+                f"- {repository.owner}/{repository.name}"
+            )
+
+            print(
+                f"  URL: {repository.url}"
+            )
+
+            for evidence in repository.evidence:
+                print(
+                    f"  Evidence: {evidence.details}"
+                )
+
         print(
             "\n=== Historical Endpoints (Wayback Machine) ==="
         )
