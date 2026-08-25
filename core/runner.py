@@ -19,6 +19,7 @@ class Runner:
         """
         Initialises the runner with the configured collectors.
         """
+
         self._collectors = collectors
 
     def run(
@@ -32,20 +33,98 @@ class Runner:
         data = ReconnaissanceData()
 
         for collector in self._collectors:
+
             collector.collect(
                 target,
                 data,
             )
 
-        # Temporary output for development.
-        print("\n=== Subdomains ===")
+        self._print_assets(
+            data,
+        )
+
+        self._print_technologies(
+            data,
+        )
+
+        self._print_repositories(
+            data,
+        )
+
+        self._print_historical_urls(
+            data,
+        )
+
+        return data
+
+    def _print_assets(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints discovered assets and their infrastructure information.
+        """
+
+        print(
+            "\n=== Assets / Infrastructure ==="
+        )
 
         for subdomain in data.subdomains:
-            print(subdomain.hostname)
 
-        print("\n=== Technologies ===")
+            print(
+                f"- {subdomain.hostname}"
+            )
+
+            for evidence in subdomain.evidence:
+
+                print(
+                    f"  Evidence: "
+                    f"{evidence.source} - "
+                    f"{evidence.details}"
+                )
+
+            for ip_address in subdomain.ip_addresses:
+
+                print(
+                    f"  IP: {ip_address.address}"
+                )
+
+                if ip_address.organization:
+
+                    print(
+                        "    Organization: "
+                        + ip_address.organization
+                    )
+
+                if ip_address.network:
+
+                    print(
+                        "    Network: "
+                        + ip_address.network
+                    )
+
+                for evidence in ip_address.evidence:
+
+                    print(
+                        f"    Evidence: "
+                        f"{evidence.source} - "
+                        f"{evidence.details}"
+                    )
+
+    def _print_technologies(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints detected technologies and vulnerabilities.
+        """
+
+        print(
+            "\n=== Technologies ==="
+        )
 
         for technology in data.technologies:
+
             version = (
                 f" {technology.version}"
                 if technology.version
@@ -57,16 +136,21 @@ class Runner:
             )
 
             if technology.cpe:
+
                 print(
                     f"  CPE: {technology.cpe}"
                 )
 
             if technology.vulnerabilities:
+
                 print(
                     "  Vulnerabilities:"
                 )
 
-                for vulnerability in technology.vulnerabilities:
+                for vulnerability in (
+                    technology.vulnerabilities
+                ):
+
                     cvss = (
                         f"CVSS {vulnerability.cvss}"
                         if vulnerability.cvss is not None
@@ -79,14 +163,26 @@ class Runner:
                     )
 
                     if vulnerability.poc:
+
                         print(
                             f"      PoC: "
                             f"{vulnerability.poc}"
                         )
 
-        print("\n=== GitHub Repositories ===")
+    def _print_repositories(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints discovered GitHub repositories.
+        """
+
+        print(
+            "\n=== GitHub Repositories ==="
+        )
 
         for repository in data.repositories:
+
             print(
                 f"- {repository.owner}/{repository.name}"
             )
@@ -96,15 +192,26 @@ class Runner:
             )
 
             for evidence in repository.evidence:
+
                 print(
                     f"  Evidence: {evidence.details}"
                 )
 
+    def _print_historical_urls(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints historical endpoints discovered through Wayback Machine.
+        """
+
         print(
-            "\n=== Historical Endpoints (Wayback Machine) ==="
+            "\n=== Historical Endpoints "
+            "(Wayback Machine) ==="
         )
 
         for endpoint in data.historical_urls:
-            print(endpoint.url)
 
-        return data
+            print(
+                endpoint.url
+            )

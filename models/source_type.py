@@ -9,11 +9,13 @@ from enum import StrEnum
 
 class SourceType(StrEnum):
     """
-    Enumerates the passive intelligence sources supported by Praevia.
+    Enumerates the supported passive intelligence sources.
     """
 
     CRT_SH = "crt.sh"
     CERTSPOTTER = "CertSpotter"
+    DNS = "DNS"
+    RDAP = "RDAP"
     WAYBACK = "Wayback Machine"
     WAPPALYZER = "Wappalyzer"
     GITHUB = "GitHub"

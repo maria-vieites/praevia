@@ -6,6 +6,10 @@ __pycache__/
 # Virtual environment
 .venv/
 
+# Environment variables
+.env
+.env.*
+
 # VS Code
 .vscode/
 
