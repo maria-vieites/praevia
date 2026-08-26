@@ -36,9 +36,22 @@ class NVDSource:
         if not cpe:
             return []
 
-        raw = self._fetch_vulnerabilities(
-            cpe,
-        )
+        try:
+
+            raw = self._fetch_vulnerabilities(
+                cpe,
+            )
+
+        except requests.RequestException as error:
+
+            print(
+                f"NVD unavailable for "
+                f"{technology.name} "
+                f"{technology.version}: "
+                f"{error}"
+            )
+
+            return []
 
         return self._parse(
             raw,

@@ -55,6 +55,8 @@ class TechnologyFingerprintCollector(BaseCollector):
 
         for technology in technologies:
 
+            # Keep the detected technology even when
+            # no version is available.
             if not technology.version:
                 continue
 
@@ -65,6 +67,8 @@ class TechnologyFingerprintCollector(BaseCollector):
                 )
             )
 
+            # CPE and vulnerability information are
+            # optional enrichment.
             if not technology.cpe:
                 continue
 
