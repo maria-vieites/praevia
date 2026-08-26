@@ -59,6 +59,14 @@ def normalise_path(
         if not segment:
             continue
 
+        # Ignore malformed path segments containing
+        # whitespace or descriptive text.
+        if any(
+            character.isspace()
+            for character in segment
+        ):
+            break
+
         # Remove HTML entities appended to archived paths.
         if "&" in segment:
             segment = segment.split("&", 1)[0]
@@ -73,9 +81,15 @@ def normalise_path(
         # Collapse implementation files into their endpoint.
         if "." in segment:
 
-            stem, extension = segment.rsplit(".", 1)
+            stem, extension = segment.rsplit(
+                ".",
+                1,
+            )
 
-            if extension.lower() in SERVER_SCRIPT_EXTENSIONS:
+            if (
+                extension.lower()
+                in SERVER_SCRIPT_EXTENSIONS
+            ):
 
                 segment = stem
 
@@ -88,9 +102,12 @@ def normalise_path(
     if not segments:
         return "/"
 
-    endpoint = "/" + "/".join(segments)
+    endpoint = "/" + "/".join(
+        segments,
+    )
 
-    # Preserve static resources (robots.txt, sitemap.xml, etc.).
+    # Preserve static resources
+    # (robots.txt, sitemap.xml, etc.).
     if "." in segments[-1]:
         return endpoint
 
