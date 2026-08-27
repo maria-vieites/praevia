@@ -9,6 +9,7 @@ import sys
 from cli.parser import create_parser
 from collectors.asset_discovery_collector import AssetDiscoveryCollector
 from collectors.github_collector import GitHubCollector
+from collectors.internet_exposure_collector import InternetExposureCollector
 from collectors.technology_fingerprint_collector import TechnologyFingerprintCollector
 from collectors.wayback_collector import WaybackCollector
 from core.runner import Runner
@@ -36,6 +37,7 @@ def main() -> None:
         TechnologyFingerprintCollector(),
         WaybackCollector(),
         GitHubCollector(),
+        InternetExposureCollector(),
     ]
 
     runner = Runner(

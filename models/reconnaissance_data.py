@@ -7,10 +7,10 @@ Stores all entities discovered during passive reconnaissance.
 from dataclasses import dataclass, field
 
 from models.historical_url import HistoricalURL
+from models.internet_exposure import InternetExposure
 from models.repository import Repository
 from models.subdomain import Subdomain
 from models.technology import Technology
-from models.web_resource import WebResource
 
 
 @dataclass(slots=True)
@@ -35,9 +35,73 @@ class ReconnaissanceData:
         default_factory=list,
     )
 
-    web_resources: list[WebResource] = field(
+    internet_exposures: list[InternetExposure] = field(
         default_factory=list,
     )
+
+    def add_internet_exposure(
+        self,
+        internet_exposure: InternetExposure,
+    ) -> None:
+        """
+        Adds an Internet exposure observation or merges it with an
+        existing observation for the same IP address.
+        """
+
+        for existing in self.internet_exposures:
+
+            if existing.ip_address != internet_exposure.ip_address:
+                continue
+
+            self._extend_unique(
+                existing.ports,
+                internet_exposure.ports,
+            )
+
+            self._extend_unique(
+                existing.cpes,
+                internet_exposure.cpes,
+            )
+
+            self._extend_unique(
+                existing.hostnames,
+                internet_exposure.hostnames,
+            )
+
+            self._extend_unique(
+                existing.tags,
+                internet_exposure.tags,
+            )
+
+            self._extend_unique(
+                existing.vulnerabilities,
+                internet_exposure.vulnerabilities,
+            )
+
+            existing.evidence.extend(
+                internet_exposure.evidence,
+            )
+
+            return
+
+        self.internet_exposures.append(
+            internet_exposure,
+        )
+
+    @staticmethod
+    def _extend_unique(
+        existing: list,
+        values: list,
+    ) -> None:
+        """
+        Extends a list while preserving insertion order and avoiding
+        duplicate values.
+        """
+
+        for value in values:
+
+            if value not in existing:
+                existing.append(value)
 
     def add_subdomain(
         self,
@@ -127,26 +191,4 @@ class ReconnaissanceData:
 
         self.repositories.append(
             repository,
-        )
-
-    def add_web_resource(
-        self,
-        web_resource: WebResource,
-    ) -> None:
-        """
-        Adds a discovered web resource or merges it with an existing one.
-        """
-
-        for existing in self.web_resources:
-
-            if existing.url == web_resource.url:
-
-                existing.evidence.extend(
-                    web_resource.evidence,
-                )
-
-                return
-
-        self.web_resources.append(
-            web_resource,
         )

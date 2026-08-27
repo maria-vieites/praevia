@@ -55,6 +55,10 @@ class Runner:
             data,
         )
 
+        self._print_internet_exposures(
+            data,
+        )
+
         return data
 
     def _print_assets(
@@ -215,3 +219,90 @@ class Runner:
             print(
                 endpoint.url
             )
+
+    def _print_internet_exposures(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints publicly observable exposure information reported
+        for discovered IP addresses.
+        """
+
+        print(
+            "\n=== Internet Exposure ==="
+        )
+
+        for exposure in data.internet_exposures:
+
+            print(
+                f"- IP: {exposure.ip_address}"
+            )
+
+            if exposure.ports:
+
+                print(
+                    "  Ports: "
+                    + ", ".join(
+                        str(port)
+                        for port in exposure.ports
+                    )
+                )
+
+            if exposure.cpes:
+
+                print(
+                    "  CPEs:"
+                )
+
+                for cpe in exposure.cpes:
+
+                    print(
+                        f"    - {cpe}"
+                    )
+
+            if exposure.hostnames:
+
+                print(
+                    "  Hostnames:"
+                )
+
+                for hostname in exposure.hostnames:
+
+                    print(
+                        f"    - {hostname}"
+                    )
+
+            if exposure.tags:
+
+                print(
+                    "  Tags:"
+                )
+
+                for tag in exposure.tags:
+
+                    print(
+                        f"    - {tag}"
+                    )
+
+            if exposure.vulnerabilities:
+
+                print(
+                    "  CVEs observed by InternetDB:"
+                )
+
+                for vulnerability in (
+                    exposure.vulnerabilities
+                ):
+
+                    print(
+                        f"    - {vulnerability}"
+                    )
+
+            for evidence in exposure.evidence:
+
+                print(
+                    f"  Evidence: "
+                    f"{evidence.source} - "
+                    f"{evidence.details}"
+                )

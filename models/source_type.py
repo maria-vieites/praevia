@@ -19,3 +19,4 @@ class SourceType(StrEnum):
     WAYBACK = "Wayback Machine"
     WAPPALYZER = "Wappalyzer"
     GITHUB = "GitHub"
+    INTERNETDB = "InternetDB"
