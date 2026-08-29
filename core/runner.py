@@ -3,6 +3,7 @@ Praevia execution runner.
 """
 
 from collectors.base_collector import BaseCollector
+from correlation.correlation_engine import CorrelationEngine
 from models.reconnaissance_data import ReconnaissanceData
 from models.target import Target
 
@@ -21,6 +22,7 @@ class Runner:
         """
 
         self._collectors = collectors
+        self._correlation_engine = CorrelationEngine()
 
     def run(
         self,
@@ -39,6 +41,11 @@ class Runner:
                 data,
             )
 
+        self._correlation_engine.correlate(
+            target,
+            data,
+        )
+
         self._print_assets(
             data,
         )
@@ -56,6 +63,10 @@ class Runner:
         )
 
         self._print_internet_exposures(
+            data,
+        )
+
+        self._print_correlations(
             data,
         )
 
@@ -306,3 +317,54 @@ class Runner:
                     f"{evidence.source} - "
                     f"{evidence.details}"
                 )
+
+    def _print_correlations(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints correlations generated from the collected observations.
+
+        This output is intended for development and manual validation.
+        It is not the final Praevia user interface.
+        """
+
+        print(
+            "\n=== Correlations ==="
+        )
+
+        if not data.correlations:
+
+            print(
+                "No correlations found."
+            )
+
+            return
+
+        for correlation in data.correlations:
+
+            print(
+                f"- {correlation.relationship}"
+            )
+
+            print(
+                f"  "
+                f"{correlation.source_type}: "
+                f"{correlation.source_key}"
+            )
+
+            print(
+                f"  "
+                f"{correlation.target_type}: "
+                f"{correlation.target_key}"
+            )
+
+            print(
+                f"  Strength: "
+                f"{correlation.strength.value}"
+            )
+
+            print(
+                f"  Reason: "
+                f"{correlation.reason}"
+            )

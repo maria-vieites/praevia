@@ -1,11 +1,14 @@
 """
 Reconnaissance data model.
 
-Stores all entities discovered during passive reconnaissance.
+Stores all entities discovered during passive reconnaissance,
+their correlations, and the intelligence findings generated from them.
 """
 
 from dataclasses import dataclass, field
 
+from models.correlation import Correlation
+from models.finding import Finding
 from models.historical_url import HistoricalURL
 from models.internet_exposure import InternetExposure
 from models.repository import Repository
@@ -36,6 +39,14 @@ class ReconnaissanceData:
     )
 
     internet_exposures: list[InternetExposure] = field(
+        default_factory=list,
+    )
+
+    correlations: list[Correlation] = field(
+        default_factory=list,
+    )
+
+    findings: list[Finding] = field(
         default_factory=list,
     )
 
@@ -191,4 +202,51 @@ class ReconnaissanceData:
 
         self.repositories.append(
             repository,
+        )
+
+    def add_correlation(
+        self,
+        correlation: Correlation,
+    ) -> None:
+        """
+        Adds a correlation if an equivalent relationship does not already
+        exist.
+        """
+
+        for existing in self.correlations:
+
+            if (
+                existing.relationship
+                == correlation.relationship
+                and existing.source_type
+                == correlation.source_type
+                and existing.source_key
+                == correlation.source_key
+                and existing.target_type
+                == correlation.target_type
+                and existing.target_key
+                == correlation.target_key
+            ):
+                return
+
+        self.correlations.append(
+            correlation,
+        )
+
+    def add_finding(
+        self,
+        finding: Finding,
+    ) -> None:
+        """
+        Adds an intelligence finding if a finding with the same ID
+        does not already exist.
+        """
+
+        for existing in self.findings:
+
+            if existing.id == finding.id:
+                return
+
+        self.findings.append(
+            finding,
         )
