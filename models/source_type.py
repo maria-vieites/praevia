@@ -20,3 +20,4 @@ class SourceType(StrEnum):
     WAPPALYZER = "Wappalyzer"
     GITHUB = "GitHub"
     INTERNETDB = "InternetDB"
+    NVD = "NVD"

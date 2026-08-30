@@ -1,22 +1,17 @@
 """
 Correlation engine.
 
-Builds justified relationships between observations already collected
-during passive reconnaissance.
+Builds justified relationships between reconnaissance observations.
 """
 
-from models.correlation import (
-    Correlation,
-    CorrelationStrength,
-)
+from models.correlation import Correlation, CorrelationStrength
 from models.reconnaissance_data import ReconnaissanceData
 from models.target import Target
 
 
 class CorrelationEngine:
     """
-    Correlates passive reconnaissance observations without modifying
-    or removing the original observations.
+    Builds traceable relationships without changing observations.
     """
 
     def correlate(
@@ -28,15 +23,15 @@ class CorrelationEngine:
         Builds all supported V1 correlations.
         """
 
+        self._correlate_hostname_ip(
+            data,
+        )
+
         self._correlate_asset_exposure(
             data,
         )
 
         self._correlate_hostname_observations(
-            data,
-        )
-
-        self._correlate_technology_cpes(
             data,
         )
 
@@ -54,30 +49,136 @@ class CorrelationEngine:
             data,
         )
 
-    def _correlate_asset_exposure(
+    def _correlate_hostname_ip(
         self,
         data: ReconnaissanceData,
     ) -> None:
         """
-        Relates a discovered subdomain to an Internet Exposure when one
-        of its discovered IP addresses has an InternetDB observation.
-        """
+        Records the direct DNS relationship between a hostname
+        and an IP address.
 
-        exposures_by_ip = {
-            exposure.ip_address: exposure
-            for exposure in data.internet_exposures
-        }
+        DIRECT means that DNS directly observed the resolution.
+        """
 
         for subdomain in data.subdomains:
 
             for ip_address in subdomain.ip_addresses:
 
-                exposure = exposures_by_ip.get(
+                has_dns_evidence = any(
+                    evidence.source.value == "DNS"
+                    for evidence
+                    in ip_address.evidence
+                )
+
+                if not has_dns_evidence:
+                    continue
+
+                data.add_correlation(
+                    Correlation(
+                        relationship=(
+                            "hostname_ip_resolution"
+                        ),
+                        source_type="Subdomain",
+                        source_key=(
+                            subdomain.hostname
+                        ),
+                        target_type="IPAddress",
+                        target_key=(
+                            ip_address.address
+                        ),
+                        strength=(
+                            CorrelationStrength.DIRECT
+                        ),
+                        reason=(
+                            "DNS directly observed that "
+                            "the hostname resolves to "
+                            "this IP address."
+                        ),
+                    )
+                )
+
+    def _correlate_asset_exposure(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Relates a discovered hostname to public Internet exposure.
+
+        The relationship is POTENTIAL when DNS associates the
+        hostname with an IP and InternetDB reports exposure for
+        that IP.
+
+        It becomes CORROBORATED only when InternetDB independently
+        reports the same hostname on that IP as well.
+
+        This does not establish ownership of the IP infrastructure.
+        """
+
+        exposures = {
+            exposure.ip_address: exposure
+            for exposure
+            in data.internet_exposures
+        }
+
+        for subdomain in data.subdomains:
+
+            hostname = self._normalise_hostname(
+                subdomain.hostname,
+            )
+
+            for ip_address in subdomain.ip_addresses:
+
+                exposure = exposures.get(
                     ip_address.address,
                 )
 
                 if exposure is None:
                     continue
+
+                observed_hostnames = {
+                    self._normalise_hostname(
+                        observed_hostname,
+                    )
+                    for observed_hostname
+                    in exposure.hostnames
+                }
+
+                hostname_corroborated = (
+                    hostname in observed_hostnames
+                )
+
+                if hostname_corroborated:
+
+                    strength = (
+                        CorrelationStrength.CORROBORATED
+                    )
+
+                    reason = (
+                        "DNS associated the hostname with "
+                        "this IP, InternetDB reported public "
+                        "Internet exposure for the same IP, "
+                        "and InternetDB independently reported "
+                        "the same hostname on that IP. This "
+                        "does not establish infrastructure "
+                        "ownership."
+                    )
+
+                else:
+
+                    strength = (
+                        CorrelationStrength.POTENTIAL
+                    )
+
+                    reason = (
+                        "DNS associated the hostname with "
+                        "this IP and InternetDB reported public "
+                        "Internet exposure for the same IP. "
+                        "InternetDB did not independently "
+                        "report this hostname on the IP, so "
+                        "the hostname-to-exposure relationship "
+                        "remains potential. This does not "
+                        "establish infrastructure ownership."
+                    )
 
                 data.add_correlation(
                     Correlation(
@@ -86,12 +187,8 @@ class CorrelationEngine:
                         source_key=subdomain.hostname,
                         target_type="InternetExposure",
                         target_key=exposure.ip_address,
-                        strength=CorrelationStrength.DIRECT,
-                        reason=(
-                            "The discovered subdomain resolves to "
-                            "an IP address for which InternetDB "
-                            "reported public exposure."
-                        ),
+                        strength=strength,
+                        reason=reason,
                     )
                 )
 
@@ -100,27 +197,28 @@ class CorrelationEngine:
         data: ReconnaissanceData,
     ) -> None:
         """
-        Correlates a discovered subdomain with an InternetDB observation
-        when the same hostname was observed on the same IP address.
+        Records explicit hostname corroboration from InternetDB.
+
+        This is kept as a separate relationship so later presentation
+        layers can show the exact observation that strengthened an
+        asset-exposure relationship.
         """
 
-        exposures_by_ip = {
+        exposures = {
             exposure.ip_address: exposure
-            for exposure in data.internet_exposures
+            for exposure
+            in data.internet_exposures
         }
 
         for subdomain in data.subdomains:
 
-            hostname = (
-                subdomain.hostname
-                .strip()
-                .lower()
-                .rstrip(".")
+            hostname = self._normalise_hostname(
+                subdomain.hostname,
             )
 
             for ip_address in subdomain.ip_addresses:
 
-                exposure = exposures_by_ip.get(
+                exposure = exposures.get(
                     ip_address.address,
                 )
 
@@ -128,10 +226,9 @@ class CorrelationEngine:
                     continue
 
                 observed_hostnames = {
-                    observed_hostname
-                    .strip()
-                    .lower()
-                    .rstrip(".")
+                    self._normalise_hostname(
+                        observed_hostname,
+                    )
                     for observed_hostname
                     in exposure.hostnames
                 }
@@ -141,77 +238,24 @@ class CorrelationEngine:
 
                 data.add_correlation(
                     Correlation(
-                        relationship="hostname_corroboration",
+                        relationship=(
+                            "hostname_corroboration"
+                        ),
                         source_type="Subdomain",
-                        source_key=subdomain.hostname,
+                        source_key=(
+                            subdomain.hostname
+                        ),
                         target_type="InternetExposure",
-                        target_key=exposure.ip_address,
+                        target_key=(
+                            exposure.ip_address
+                        ),
                         strength=(
                             CorrelationStrength.CORROBORATED
                         ),
                         reason=(
-                            "InternetDB also observed the same "
-                            "hostname on the same IP address."
-                        ),
-                    )
-                )
-
-    def _correlate_technology_cpes(
-        self,
-        data: ReconnaissanceData,
-    ) -> None:
-        """
-        Correlates a detected technology with an InternetDB observation
-        when both contain the same CPE.
-
-        The CPE match represents corroborating observations. It does not
-        assert that all information observed on the IP belongs to the
-        target.
-        """
-
-        for technology in data.technologies:
-
-            if not technology.cpe:
-                continue
-
-            technology_cpe = (
-                technology.cpe
-                .strip()
-                .lower()
-            )
-
-            if not technology_cpe:
-                continue
-
-            for exposure in data.internet_exposures:
-
-                observed_cpes = {
-                    cpe.strip().lower()
-                    for cpe in exposure.cpes
-                }
-
-                if technology_cpe not in observed_cpes:
-                    continue
-
-                technology_key = self._technology_key(
-                    technology.name,
-                    technology.version,
-                )
-
-                data.add_correlation(
-                    Correlation(
-                        relationship="technology_exposure_cpe",
-                        source_type="Technology",
-                        source_key=technology_key,
-                        target_type="InternetExposure",
-                        target_key=exposure.ip_address,
-                        strength=(
-                            CorrelationStrength.CORROBORATED
-                        ),
-                        reason=(
-                            "The technology fingerprint and the "
-                            "InternetDB observation contain the "
-                            "same CPE."
+                            "InternetDB independently "
+                            "reported the same hostname "
+                            "on the same IP address."
                         ),
                     )
                 )
@@ -221,11 +265,14 @@ class CorrelationEngine:
         data: ReconnaissanceData,
     ) -> None:
         """
-        Correlates CVEs associated with detected technologies with CVEs
-        observed by InternetDB.
+        Records the direct relationship between a detected technology
+        and each vulnerability returned for that technology by NVD.
 
-        This represents corroborating vulnerability intelligence. It does
-        not establish that the target is definitively vulnerable.
+        The relationship is DIRECT because the vulnerability enrichment
+        is attached to the specific Technology observation.
+
+        This does not assert that the vulnerability is remotely
+        exploitable.
         """
 
         for technology in data.technologies:
@@ -246,33 +293,26 @@ class CorrelationEngine:
                 if not cve:
                     continue
 
-                for exposure in data.internet_exposures:
-
-                    observed_vulnerabilities = {
-                        value.strip().upper()
-                        for value in exposure.vulnerabilities
-                    }
-
-                    if cve not in observed_vulnerabilities:
-                        continue
-
-                    data.add_correlation(
-                        Correlation(
-                            relationship="technology_exposure_cve",
-                            source_type="Technology",
-                            source_key=technology_key,
-                            target_type="InternetExposure",
-                            target_key=exposure.ip_address,
-                            strength=(
-                                CorrelationStrength.CORROBORATED
-                            ),
-                            reason=(
-                                f"CVE {cve} is associated with the "
-                                "detected technology and was also "
-                                "observed by InternetDB on the IP."
-                            ),
-                        )
+                data.add_correlation(
+                    Correlation(
+                        relationship=(
+                            "technology_vulnerability"
+                        ),
+                        source_type="Technology",
+                        source_key=technology_key,
+                        target_type="Vulnerability",
+                        target_key=cve,
+                        strength=(
+                            CorrelationStrength.DIRECT
+                        ),
+                        reason=(
+                            "NVD enrichment associated "
+                            f"{cve} with the CPE used for "
+                            f"the detected technology "
+                            f"{technology_key}."
+                        ),
                     )
+                )
 
     def _correlate_historical_urls(
         self,
@@ -280,12 +320,7 @@ class CorrelationEngine:
         data: ReconnaissanceData,
     ) -> None:
         """
-        Relates historical URLs to the analysed target.
-
-        The current Wayback collector queries the target itself and stores
-        the resulting historical paths without an individual hostname.
-        Therefore, these observations are associated with the target and
-        are not artificially assigned to discovered subdomains.
+        Relates Wayback observations directly to the target.
         """
 
         for historical_url in data.historical_urls:
@@ -294,13 +329,18 @@ class CorrelationEngine:
                 Correlation(
                     relationship="historical_surface",
                     source_type="HistoricalURL",
-                    source_key=historical_url.url,
+                    source_key=(
+                        historical_url.url
+                    ),
                     target_type="Target",
                     target_key=target.host,
-                    strength=CorrelationStrength.DIRECT,
+                    strength=(
+                        CorrelationStrength.DIRECT
+                    ),
                     reason=(
-                        "The historical URL was discovered by the "
-                        "Wayback query performed for the analysed target."
+                        "The historical URL was returned "
+                        "by the Wayback query performed "
+                        "for the analysed target."
                     ),
                 )
             )
@@ -311,30 +351,49 @@ class CorrelationEngine:
         data: ReconnaissanceData,
     ) -> None:
         """
-        Relates GitHub repositories to the target as potential
+        Relates GitHub results to the target as potential
         associations.
 
-        A GitHub search result does not prove repository ownership.
+        A GitHub search result does not prove ownership.
         """
 
         for repository in data.repositories:
 
             data.add_correlation(
                 Correlation(
-                    relationship="potential_repository",
+                    relationship=(
+                        "potential_repository"
+                    ),
                     source_type="Repository",
                     source_key=repository.url,
                     target_type="Target",
                     target_key=target.host,
-                    strength=CorrelationStrength.POTENTIAL,
+                    strength=(
+                        CorrelationStrength.POTENTIAL
+                    ),
                     reason=(
-                        "The repository was discovered through a "
-                        "GitHub search related to the target. "
-                        "The association is potential and does not "
-                        "establish ownership."
+                        "The repository was discovered "
+                        "through GitHub intelligence related "
+                        "to the target, but the available "
+                        "evidence does not establish ownership."
                     ),
                 )
             )
+
+    @staticmethod
+    def _normalise_hostname(
+        hostname: str,
+    ) -> str:
+        """
+        Normalises a hostname for comparison.
+        """
+
+        return (
+            hostname
+            .strip()
+            .lower()
+            .rstrip(".")
+        )
 
     @staticmethod
     def _technology_key(
@@ -342,7 +401,7 @@ class CorrelationEngine:
         version: str | None,
     ) -> str:
         """
-        Builds a stable key for a technology observation.
+        Builds the stable technology key used by correlations.
         """
 
         if version:

@@ -4,6 +4,7 @@ Praevia execution runner.
 
 from collectors.base_collector import BaseCollector
 from correlation.correlation_engine import CorrelationEngine
+from intelligence.intelligence_engine import IntelligenceEngine
 from models.reconnaissance_data import ReconnaissanceData
 from models.target import Target
 
@@ -23,6 +24,7 @@ class Runner:
 
         self._collectors = collectors
         self._correlation_engine = CorrelationEngine()
+        self._intelligence_engine = IntelligenceEngine()
 
     def run(
         self,
@@ -43,6 +45,10 @@ class Runner:
 
         self._correlation_engine.correlate(
             target,
+            data,
+        )
+
+        self._intelligence_engine.analyse(
             data,
         )
 
@@ -67,6 +73,10 @@ class Runner:
         )
 
         self._print_correlations(
+            data,
+        )
+
+        self._print_findings(
             data,
         )
 
@@ -368,3 +378,99 @@ class Runner:
                 f"  Reason: "
                 f"{correlation.reason}"
             )
+
+    def _print_findings(
+        self,
+        data: ReconnaissanceData,
+    ) -> None:
+        """
+        Prints intelligence findings.
+
+        This output is intended for development and manual validation.
+        It is not the final Praevia user interface.
+        """
+
+        print(
+            "\n=== Intelligence Findings ==="
+        )
+
+        if not data.findings:
+
+            print(
+                "No findings generated."
+            )
+
+            return
+
+        for finding in data.findings:
+
+            print(
+                f"- {finding.title}"
+            )
+
+            print(
+                f"  ID: {finding.id}"
+            )
+
+            print(
+                f"  Category: {finding.category}"
+            )
+
+            print(
+                f"  Confidence: "
+                f"{finding.confidence:.2f}"
+            )
+
+            print(
+                f"  Description: "
+                f"{finding.description}"
+            )
+
+            if finding.signals:
+
+                print(
+                    "  Signals:"
+                )
+
+                for signal in finding.signals:
+
+                    print(
+                        f"    - {signal.type}: "
+                        f"{signal.value}"
+                    )
+
+                    print(
+                        f"      {signal.description}"
+                    )
+
+            if finding.correlations:
+
+                print(
+                    "  Correlations:"
+                )
+
+                for correlation in (
+                    finding.correlations
+                ):
+
+                    print(
+                        f"    - "
+                        f"{correlation.relationship} "
+                        f"("
+                        f"{correlation.strength.value}"
+                        f")"
+                    )
+
+            if finding.evidence:
+
+                print(
+                    "  Evidence:"
+                )
+
+                for evidence in finding.evidence:
+
+                    print(
+                        f"    - "
+                        f"{evidence.source}: "
+                        f"{evidence.details}"
+                    )

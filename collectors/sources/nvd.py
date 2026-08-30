@@ -7,6 +7,8 @@ vulnerability enrichment.
 
 import requests
 
+from models.evidence import Evidence
+from models.source_type import SourceType
 from models.technology import Technology
 from models.vulnerability import Vulnerability
 
@@ -93,6 +95,7 @@ class NVDSource:
             "vulnerabilities",
             [],
         ):
+
             cve = item.get(
                 "cve",
                 {},
@@ -127,6 +130,15 @@ class NVDSource:
                     cvss=cvss,
                     cvss_version=cvss_version,
                     description=description,
+                    evidence=[
+                        Evidence(
+                            source=SourceType.NVD,
+                            details=(
+                                f"NVD associated {cve_id} "
+                                f"with the requested CPE {cpe}."
+                            ),
+                        )
+                    ],
                 )
             )
 
@@ -153,14 +165,17 @@ class NVDSource:
             "configurations",
             [],
         ):
+
             for node in configuration.get(
                 "nodes",
                 [],
             ):
+
                 for match in node.get(
                     "cpeMatch",
                     [],
                 ):
+
                     if not match.get(
                         "vulnerable",
                         False,
@@ -197,9 +212,11 @@ class NVDSource:
             "descriptions",
             [],
         ):
+
             if description.get(
                 "lang",
             ) == "en":
+
                 return description.get(
                     "value",
                 )
@@ -228,10 +245,12 @@ class NVDSource:
 
         # Prefer a Primary metric.
         for metric_name in metric_names:
+
             for metric in metrics.get(
                 metric_name,
                 [],
             ):
+
                 if metric.get(
                     "type",
                 ) != "Primary":
@@ -253,16 +272,19 @@ class NVDSource:
 
         # Fall back to a Secondary metric.
         for metric_name in metric_names:
+
             for metric in metrics.get(
                 metric_name,
                 [],
             ):
+
                 cvss_data = metric.get(
                     "cvssData",
                     {},
                 )
 
                 if cvss_data:
+
                     return (
                         cvss_data.get(
                             "baseScore",
