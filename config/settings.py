@@ -10,14 +10,15 @@ VERSION = "0.1.0"
 SUPPORTED_OUTPUTS = (
     "html",
     "json",
-    "pdf",
 )
 
-DEFAULT_OUTPUT = [
-    "html",
-]
-
 DEFAULT_OUTPUT_DIRECTORY = "reports"
+
+
+HIGH_PRIORITY_STYLE = "bold red"
+MEDIUM_PRIORITY_STYLE = "bold dark_orange"
+LOW_PRIORITY_STYLE = "bold yellow"
+INFO_PRIORITY_STYLE = "bold grey70"
 
 
 HTTP_TIMEOUT = 20

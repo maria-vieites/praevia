@@ -1,3 +1,4 @@
 requests>=2.34.2
 playwright==1.62.0
 wappalyzer==2.0.2
+rich>=14.1.0

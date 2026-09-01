@@ -7,7 +7,6 @@ This module defines and configures Praevia's command-line interface.
 import argparse
 
 from config.settings import (
-    DEFAULT_OUTPUT,
     DEFAULT_OUTPUT_DIRECTORY,
     SUPPORTED_OUTPUTS,
     VERSION,
@@ -21,54 +20,48 @@ def create_parser() -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(
         prog="praevia",
-        description="OSINT reconnaissance assistant for web application security assessments.",
+        description=(
+            "OSINT reconnaissance assistant for web application "
+            "security assessments."
+        ),
     )
 
-    # Positional arguments
     parser.add_argument(
         "target",
         help="Target domain to analyse.",
     )
 
-    # Output modes
     verbosity_group = parser.add_mutually_exclusive_group()
 
     verbosity_group.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="Enable verbose output.",
+        help="Show detailed execution information.",
     )
 
     verbosity_group.add_argument(
         "-q",
         "--quiet",
         action="store_true",
-        help="Suppress non-essential output.",
+        help="Suppress non-essential execution output.",
     )
 
-    # Output options
     parser.add_argument(
         "-o",
         "--output",
         nargs="+",
         choices=SUPPORTED_OUTPUTS,
-        default=DEFAULT_OUTPUT,
-        help="Output format(s).",
+        help=(
+            "Generate one or more report formats instead of opening "
+            "the interactive CLI."
+        ),
     )
 
     parser.add_argument(
         "--output-dir",
         default=DEFAULT_OUTPUT_DIRECTORY,
         help="Directory where generated reports will be saved.",
-    )
-
-    # General options
-    parser.add_argument(
-        "-e",
-        "--explain",
-        action="store_true",
-        help="Include explanations for recommendations in the report.",
     )
 
     parser.add_argument(
