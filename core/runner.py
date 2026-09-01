@@ -7,6 +7,7 @@ from correlation.correlation_engine import CorrelationEngine
 from intelligence.intelligence_engine import IntelligenceEngine
 from models.reconnaissance_data import ReconnaissanceData
 from models.target import Target
+from priorisation.priorisation_engine import PriorisationEngine
 
 
 class Runner:
@@ -25,6 +26,7 @@ class Runner:
         self._collectors = collectors
         self._correlation_engine = CorrelationEngine()
         self._intelligence_engine = IntelligenceEngine()
+        self._priorisation_engine = PriorisationEngine()
 
     def run(
         self,
@@ -49,6 +51,12 @@ class Runner:
         )
 
         self._intelligence_engine.analyse(
+            target,
+            data,
+        )
+
+        self._priorisation_engine.prioritise(
+            target,
             data,
         )
 
@@ -384,7 +392,7 @@ class Runner:
         data: ReconnaissanceData,
     ) -> None:
         """
-        Prints intelligence findings.
+        Prints intelligence findings and their priorities.
 
         This output is intended for development and manual validation.
         It is not the final Praevia user interface.
@@ -416,10 +424,81 @@ class Runner:
                 f"  Category: {finding.category}"
             )
 
+            if finding.target is not None:
+
+                print(
+                    f"  Target: {finding.target}"
+                )
+
             print(
                 f"  Confidence: "
                 f"{finding.confidence:.2f}"
             )
+
+            if finding.confidence_basis is not None:
+
+                print(
+                    f"  Confidence basis: "
+                    f"{finding.confidence_basis}"
+                )
+
+            if finding.confidence_scope is not None:
+
+                print(
+                    f"  Confidence scope: "
+                    f"{finding.confidence_scope}"
+                )
+
+            if (
+                finding.service_association_confidence
+                is not None
+            ):
+
+                print(
+                    f"  Service association confidence: "
+                    f"{finding.service_association_confidence:.2f}"
+                )
+
+            if finding.priority is not None:
+
+                print(
+                    f"  Priority: "
+                    f"{finding.priority.name} "
+                    f"({finding.priority_score:.1f}/100)"
+                )
+
+                if finding.priority_raw_score is not None:
+
+                    print(
+                        f"  Raw priority score: "
+                        f"{finding.priority_raw_score:.1f}/100"
+                    )
+
+                if finding.priority_cap is not None:
+
+                    print(
+                        f"  Priority cap: "
+                        f"{finding.priority_cap:.1f}/100"
+                    )
+
+                    if finding.priority_cap_reason:
+
+                        print(
+                            f"  Priority cap reason: "
+                            f"{finding.priority_cap_reason}"
+                        )
+
+            if finding.priority_rationale:
+
+                print(
+                    "  Priority rationale:"
+                )
+
+                for reason in finding.priority_rationale:
+
+                    print(
+                        f"    - {reason}"
+                    )
 
             print(
                 f"  Description: "
@@ -460,6 +539,85 @@ class Runner:
                         f"{correlation.strength.value}"
                         f")"
                     )
+
+            if finding.exposure_observations:
+
+                print(
+                    "  Exposure observations:"
+                )
+
+                for observation in (
+                    finding.exposure_observations
+                ):
+
+                    print(
+                        f"    - IP: "
+                        f"{observation.ip_address}"
+                    )
+
+                    if observation.relationship_strength:
+
+                        print(
+                            f"      Relationship: "
+                            f"{observation.relationship_strength.value}"
+                        )
+
+                    if observation.ip_sharing is not None:
+
+                        print(
+                            f"      IP sharing: "
+                            f"{observation.ip_sharing}"
+                        )
+
+                    else:
+
+                        print(
+                            "      IP sharing: Unknown"
+                        )
+
+                    if observation.ports:
+
+                        print(
+                            "      Ports: "
+                            + ", ".join(
+                                str(port)
+                                for port in observation.ports
+                            )
+                        )
+
+                    if observation.hostnames:
+
+                        print(
+                            "      Hostnames: "
+                            + ", ".join(
+                                observation.hostnames
+                            )
+                        )
+
+                    if observation.tags:
+
+                        print(
+                            "      Tags: "
+                            + ", ".join(
+                                observation.tags
+                            )
+                        )
+
+                    if observation.cpes:
+
+                        print(
+                            "      CPEs: "
+                            + ", ".join(
+                                observation.cpes
+                            )
+                        )
+
+                    if observation.vulnerabilities:
+
+                        print(
+                            f"      Observed CVEs: "
+                            f"{len(observation.vulnerabilities)}"
+                        )
 
             if finding.evidence:
 

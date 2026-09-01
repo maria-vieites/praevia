@@ -1,17 +1,16 @@
 """
-Investigation priority enumeration.
-
-Defines the qualitative priority levels assigned to investigation findings.
+Investigation priority levels.
 """
 
-from enum import Enum, auto
+from enum import Enum
 
 
 class InvestigationPriority(Enum):
     """
-    Defines the priority assigned to an investigation finding.
+    Qualitative priority levels derived from the 0-100 priority score.
     """
 
-    HIGH = auto()
-    MEDIUM = auto()
-    LOW = auto()
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+    INFO = "Info"

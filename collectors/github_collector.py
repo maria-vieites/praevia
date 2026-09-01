@@ -11,6 +11,61 @@ from models.source_type import SourceType
 from models.target import Target
 
 
+def _normalise_source_text(
+    value: str,
+) -> str:
+    """
+    Normalises obvious source-text encoding corruption.
+
+    Source descriptions are preserved as supplied by GitHub. This helper
+    only repairs a small set of known mojibake/corruption patterns that
+    have been observed in source descriptions; it does not translate
+    text or change its original language.
+    """
+
+    if not value:
+        return value
+
+    try:
+
+        repaired = value.encode(
+            "latin-1",
+        ).decode(
+            "utf-8",
+        )
+
+        value = repaired
+
+    except (
+        UnicodeEncodeError,
+        UnicodeDecodeError,
+    ):
+        pass
+
+    # Some source descriptions contain character substitutions rather
+    # than standard UTF-8/Latin-1 mojibake. Keep this deliberately
+    # conservative and repair only patterns that are unambiguous in
+    # the affected French text.
+    known_corruptions = {
+        "Ûtre": "être",
+        "franþais": "français",
+        "rÚdigÚ": "rédigé",
+        "rÚdigÚe": "rédigée",
+        "collaboratif en franþais": (
+            "collaboratif en français"
+        ),
+    }
+
+    for corrupted, corrected in known_corruptions.items():
+
+        value = value.replace(
+            corrupted,
+            corrected,
+        )
+
+    return value
+
+
 class GitHubCollector(BaseCollector):
     """
     Collects publicly available GitHub information related to the target.
@@ -71,22 +126,32 @@ class GitHubCollector(BaseCollector):
                 "description",
             )
 
+            if description:
+                description = _normalise_source_text(
+                    description,
+                )
+
             if query_type == "name":
+
                 details = (
                     "GitHub repository found through "
                     "a search matching the target domain "
                     "in the repository name."
                 )
+
             else:
+
                 details = (
                     "GitHub repository found through "
                     "a search for the target domain."
                 )
 
             if description:
+
                 details = (
                     f"{details} "
-                    f"Description: {description}"
+                    f"Source description (original): "
+                    f"{description}"
                 )
 
             data.add_repository(

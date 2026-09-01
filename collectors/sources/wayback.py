@@ -60,8 +60,8 @@ class WaybackSource:
         return sorted(
             endpoints,
             key=lambda endpoint: (
-                endpoint.strip("/").split("/", 1)[0],
-                endpoint.count("/"),
+                urlparse(endpoint).hostname or "",
+                urlparse(endpoint).path.count("/"),
                 endpoint,
             ),
         )
@@ -119,29 +119,49 @@ class WaybackSource:
             ).lower()
 
             if hostname.startswith("www."):
-                hostname = hostname[4:]
+
+                comparison_hostname = hostname[4:]
+
+            else:
+
+                comparison_hostname = hostname
 
             if not (
-                hostname == target_host
-                or hostname.endswith(
+                comparison_hostname == target_host
+                or comparison_hostname.endswith(
                     "." + target_host
                 )
             ):
                 continue
 
             # Decode percent-encoded characters before processing.
-            path = unquote(parsed.path).rstrip("\\")
+            path = unquote(
+                parsed.path,
+            ).rstrip("\\")
 
             # Ignore malformed archive entries containing
             # escaped Unicode sequences.
             if _UNICODE_ESCAPE_RE.search(path):
                 continue
 
-            endpoint = normalise_path(path)
+            endpoint = normalise_path(
+                path,
+            )
 
             if endpoint == "/":
                 continue
 
-            endpoints.add(endpoint)
+            scheme = (
+                parsed.scheme.lower()
+                if parsed.scheme.lower()
+                in {"http", "https"}
+                else "https"
+            )
+
+            endpoints.add(
+                f"{scheme}://"
+                f"{parsed.hostname or target_host}"
+                f"{endpoint}"
+            )
 
         return endpoints
