@@ -8,7 +8,7 @@ import os
 VERSION = "0.1.0"
 
 SUPPORTED_OUTPUTS = (
-    "html",
+    # "html",
     "json",
 )
 

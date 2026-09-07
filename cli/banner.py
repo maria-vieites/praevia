@@ -12,19 +12,28 @@ def render_banner() -> Panel:
     Build the Praevia banner for the interactive CLI.
     """
 
-    title = Text(
-        "PRAEVIA",
+    ascii_logo = """
+██████╗ ██████╗  █████╗ ███████╗██╗   ██╗██╗ █████╗
+██╔══██╗██╔══██╗██╔══██╗██╔════╝██║   ██║██║██╔══██╗
+██████╔╝██████╔╝███████║█████╗  ██║   ██║██║███████║
+██╔═══╝ ██╔══██╗██╔══██║██╔══╝  ╚██╗ ██╔╝██║██╔══██║
+██║     ██║  ██║██║  ██║███████╗ ╚████╔╝ ██║██║  ██║
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝╚═╝  ╚═╝
+"""
+
+    logo = Text(
+        ascii_logo,
         style="bold cyan",
     )
 
     subtitle = Text(
-        "Passive Reconnaissance & Exposure Assessment",
+        "Passive Reconnaissance & Exposure Intelligence",
         style="dim",
     )
 
     content = Text()
     content.append(
-        title,
+        logo,
     )
     content.append(
         "\n",
@@ -38,5 +47,5 @@ def render_banner() -> Panel:
             content,
         ),
         border_style="cyan",
-        padding=(1, 4),
+        padding=(1, 2),
     )
