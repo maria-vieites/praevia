@@ -17,9 +17,7 @@ class IPAddress:
     """
 
     address: str
-
     organization: str | None = None
-
     network: str | None = None
 
     evidence: list[Evidence] = field(

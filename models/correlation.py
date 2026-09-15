@@ -30,13 +30,9 @@ class Correlation:
     """
 
     relationship: str
-
     source_type: str
     source_key: str
-
     target_type: str
     target_key: str
-
     strength: CorrelationStrength
-
     reason: str

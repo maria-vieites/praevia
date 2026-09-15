@@ -22,9 +22,7 @@ class FindingSignal:
     """
 
     type: str
-
     value: str
-
     description: str
 
 
@@ -78,21 +76,13 @@ class Finding:
     """
 
     id: str
-
     title: str
-
     description: str
-
     category: str
-
     confidence: float
-
     target: str | None = None
-
     confidence_basis: str | None = None
-
     confidence_scope: str | None = None
-
     strength: CorrelationStrength | None = None
 
     signals: list[FindingSignal] = field(
@@ -114,15 +104,10 @@ class Finding:
     )
 
     service_association_confidence: float | None = None
-
     priority_raw_score: float | None = None
-
     priority_score: float | None = None
-
     priority_cap: float | None = None
-
     priority_cap_reason: str | None = None
-
     priority: InvestigationPriority | None = None
 
     priority_rationale: list[str] = field(

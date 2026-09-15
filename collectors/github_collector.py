@@ -42,10 +42,8 @@ def _normalise_source_text(
     ):
         pass
 
-    # Some source descriptions contain character substitutions rather
-    # than standard UTF-8/Latin-1 mojibake. Keep this deliberately
-    # conservative and repair only patterns that are unambiguous in
-    # the affected French text.
+    # Repair unambiguous UTF-8/Latin-1 character substitutions 
+    # in affected French text from the python.org example.
     known_corruptions = {
         "Ûtre": "être",
         "franþais": "français",

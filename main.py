@@ -14,7 +14,6 @@ from collectors.internet_exposure_collector import InternetExposureCollector
 from collectors.technology_fingerprint_collector import TechnologyFingerprintCollector
 from collectors.wayback_collector import WaybackCollector
 from core.runner import Runner
-# from exporters.html_exporter import export_html
 from exporters.json_exporter import export_json
 from models.target import parse_target
 from rich.console import Console
@@ -74,16 +73,6 @@ def main() -> None:
                     args.output_dir,
                 )
             )
-
-#        if "html" in output_formats:
-
-#            generated.append(
-#                export_html(
-#                    target,
-#                    data,
-#                    args.output_dir,
-#                )
-#            )
 
         if not args.quiet:
 
