@@ -13,9 +13,6 @@ __pycache__/
 # VS Code
 .vscode/
 
-# Reports
-reports/
-
 # macOS
 .DS_Store
 
